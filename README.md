@@ -7,6 +7,8 @@ Quicknotes plugin for Neovim.
 Create a Quicknote in a floating window, and save it on your computer to be picked up later.
 The Quicknote supports Markdown format.
 
+If, like me, you are someone that always needs to note down stuff when working on a project, then this plugin may be for you!
+
 ## Installation
 
 ### Lazy
