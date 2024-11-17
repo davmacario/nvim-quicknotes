@@ -11,14 +11,21 @@ local DEFAULTS = {
   },
 }
 
-local opts = DEFAULTS
+local config = DEFAULTS
 
 local M = {}
+
+-- Check whether the quicknotes directory exists. If not, create it.
+function M.check_quicknotes_dir()
+  if vim.fn.isdirectory() == 0 then
+    utils.create_dir(config.quicknotes_dir)
+  end
+end
 
 -- Open editable floating buffer containing the quicknote
 function M.open_quicknotes()
   -- Build file name
-  local qn_path = utils.path_join({ opts.quicknotes_dir, utils.get_qn_fname() })
+  local qn_path = utils.path_join({ config.quicknotes_dir, utils.get_qn_fname() })
   -- qn_path = vim.fn.fnameescape(qn_path)
   -- Check if file exists, if not, create it
   if not utils.file_exists(qn_path) then
@@ -26,13 +33,13 @@ function M.open_quicknotes()
   end
   -- Open the floating window with the file
   -- TODO: check if modifying opts in setup changes them here also
-  ui.open_float_win(qn_path, opts.window)
+  ui.open_float_win(qn_path, config.window)
 end
 
 -- Cleanup the directory - remove quicknotes whose associated project does not
 -- exist anymore
 function M.cleanup_quicknotes()
-  local p, err = io.popen("ls -1 " .. opts.quicknotes_dir)
+  local p, err = io.popen("ls -1 " .. config.quicknotes_dir)
   if p == nil then
     error("Unable to get directory contents: " .. err)
     return
@@ -41,7 +48,7 @@ function M.cleanup_quicknotes()
     local project_path = utils.get_qn_project(filename)
     if not utils.is_name_quicknotes(filename) or (vim.fn.isdirectory(project_path) == 0) then
       print("Removing " .. filename)
-      local ok, err1 = os.remove(utils.path_join({ opts.quicknotes_dir, filename }))
+      local ok, err1 = os.remove(utils.path_join({ config.quicknotes_dir, filename }))
       if not ok then
         error("Unable to delete " .. filename .. ": " .. err1)
         break
@@ -52,20 +59,13 @@ function M.cleanup_quicknotes()
 end
 
 function M.clear_quicknotes()
-  local qn_path = utils.path_join({ opts.quicknotes_dir, utils.get_qn_fname() })
+  local qn_path = utils.path_join({ config.quicknotes_dir, utils.get_qn_fname() })
   if utils.file_exists(qn_path) then
     utils.delete_file(qn_path)
   end
 end
 
-function M.setup(opts)
-  -- TODO:
-  -- Set opts - not for now
-  -- - [ ] check quicknotes_dir exists (else, create it) -- maybe not needed because of utils.create_file_and_dirs
-
-  M.cleanup_quicknotes()
-
-  -- Define user commands
+function M.create_user_commands()
   local usercmd = vim.api.nvim_create_user_command
   usercmd("Quicknotes", function(opts)
     if opts.bang then
@@ -79,6 +79,25 @@ function M.setup(opts)
     M.cleanup_quicknotes,
     { desc = "Cleanup quicknotes folder (delete notes which don't have an associated directory anymore)" }
   )
+end
+
+function M.setup(opts)
+  -- Set opts
+  if opts ~= nil then
+    if opts.quicknotes_dir ~= nil then
+      config.quicknotes_dir = opts.quicknotes_dir
+    end
+    if opts.window ~= nil then
+      config.window = vim.tbl_extend("force", config.window, opts.window)
+    end
+  end
+  vim.print(config)
+  -- Check quicknotes_dir exists (else, create it) -- maybe not needed because of utils.create_file_and_dirs
+  M.check_quicknotes_dir()
+  -- Cleanup
+  M.cleanup_quicknotes()
+  -- Define user commands
+  M.create_user_commands()
 end
 
 return M

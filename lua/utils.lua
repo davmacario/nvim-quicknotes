@@ -119,8 +119,7 @@ end
 function M.create_file(file)
 	local ok, fd = pcall(vim.loop.fs_open, file, "w", 420)
 	if not ok or type(fd) ~= "number" then
-		-- TODO: format error correctly
-		print("Could not create file '" .. file .. "'")
+		error("Could not create file '" .. file .. "'")
 		return false
 	end
 	vim.loop.fs_close(fd)
@@ -145,8 +144,7 @@ end
 function M.create_dir(path)
 	local success = pcall(vim.uv.fs_mkdir, path, 493)
 	if not success then
-		-- TODO: format error correctly
-		print("Could not create folder '" .. path .. "'")
+		error("Could not create folder '" .. path .. "'")
 		return false
 	end
 	return true
