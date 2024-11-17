@@ -17,7 +17,7 @@ local M = {}
 
 -- Check whether the quicknotes directory exists. If not, create it.
 function M.check_quicknotes_dir()
-  if vim.fn.isdirectory() == 0 then
+  if vim.fn.isdirectory(config.quicknotes_dir) == 0 then
     utils.create_dir(config.quicknotes_dir)
   end
 end
@@ -91,7 +91,6 @@ function M.setup(opts)
       config.window = vim.tbl_extend("force", config.window, opts.window)
     end
   end
-  vim.print(config)
   -- Check quicknotes_dir exists (else, create it) -- maybe not needed because of utils.create_file_and_dirs
   M.check_quicknotes_dir()
   -- Cleanup
