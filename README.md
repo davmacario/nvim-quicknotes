@@ -16,7 +16,11 @@ If, like me, you are someone that always needs to note down stuff when working o
 ```lua
 {
   "davmacario/nvim-quicknotes",
+  -- >>> The following are optionals, to enable lazy loading
+  keys = { "<leader>qn" },
   cmd = { "Quicknotes", "QuicknotesClear", "QuicknotesCleanup" }, -- Lazy-load the plugin
+  -- <<<
+
   config = function()
     require("nvim-quicknotes").setup()
 
