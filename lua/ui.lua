@@ -41,7 +41,6 @@ valid_win_attr.relative = {
 --- @param opts table
 function M.open_float_win(filename, opts)
 	-- Default opts
-	local readonly = false
 	local window = {
 		width = 0.5,
 		height = 0.6,
@@ -49,8 +48,10 @@ function M.open_float_win(filename, opts)
 		style = "minimal",
 		border = "rounded",
 	}
+  local title = "📝 Quicknotes"
+	local title_color = "#FABD2F"
+
 	if opts ~= nil then -- extract options
-		readonly = opts.readonly or readonly
 		if opts.width and in_range(opts.width, 0, 1) then
 			window.width = opts.width
 		end
@@ -66,18 +67,26 @@ function M.open_float_win(filename, opts)
 		if opts.border and in_array(opts.border, valid_win_attr.border) then
 			window.border = opts.border
 		end
+    title = opts.title or title
+		title_color = opts.title_color or title_color
 	end
+	vim.api.nvim_set_hl(0, "TYellow", { fg = title_color })
+	local title_format = {
+		title = { { title, "TYellow" } },
+		title_pos = "center",
+	}
 
-	-- local filename = vim.fn.fnameescape(filename)
-	local lines = vim.fn.readfile(filename)
-	local newbuf = vim.api.nvim_create_buf(false, true)
-	vim.api.nvim_buf_set_lines(newbuf, 0, -1, false, lines)
+	-- Create buffer
+	local newbuf = vim.api.nvim_create_buf(false, false)
 	vim.api.nvim_buf_set_name(newbuf, filename)
-
-	vim.bo[newbuf].modifiable = not readonly
-	vim.bo[newbuf].readonly = readonly
+	vim.bo[newbuf].readonly = false
+	vim.bo[newbuf].modifiable = true
 	vim.bo[newbuf].filetype = vim.filetype.match({ filename = filename, buf = newbuf }) or "markdown"
+	vim.bo[newbuf].bufhidden = "delete"
 	vim.bo[newbuf].buftype = ""
+	vim.bo[newbuf].swapfile = false
+	vim.bo[newbuf].buflisted = false
+	vim.diagnostic.enable(false, { bufnr = newbuf })
 
 	-- Ensure floating win is at least 10x80 always
 	window.width = math.max(math.floor(vim.o.columns * window.width), 80)
@@ -85,29 +94,27 @@ function M.open_float_win(filename, opts)
 	window.col = math.floor((vim.o.columns - window.width) / 2)
 	window.row = math.floor((vim.o.lines - window.height) / 2)
 
-	local win = vim.api.nvim_open_win(newbuf, true, window)
+	local windowopts = vim.tbl_extend("force", window, title_format)
+	local win = vim.api.nvim_open_win(newbuf, true, windowopts)
 	vim.wo[win].number = false
 	vim.wo[win].relativenumber = false
 	vim.wo[win].cursorline = false
-	vim.keymap.set(
-		"n",
-		"q",
-		function()
-			if not readonly then
-				vim.api.nvim_buf_call(newbuf, function()
-					vim.cmd("silent write!")
-				end)
-			end
-			vim.api.nvim_win_close(win, true)
-      vim.api.nvim_buf_delete(newbuf, { force = true })
-		end,
-		{
-			buffer = newbuf,
-			noremap = true,
-			silent = true,
-			desc = "Quit floating window. If buffer is editable, will also write changes",
-		}
-	)
+	vim.api.nvim_set_current_win(win)
+
+	vim.cmd("edit " .. vim.fn.fnameescape(filename))
+
+	vim.keymap.set("n", "q", function()
+		vim.api.nvim_buf_call(newbuf, function()
+			vim.cmd("silent write!")
+		end)
+		vim.api.nvim_win_close(win, true)
+		vim.api.nvim_buf_delete(newbuf, { force = true })
+	end, {
+		buffer = newbuf,
+		noremap = true,
+		silent = true,
+		desc = "Write and quit floating window.",
+	})
 end
 
 return M

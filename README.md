@@ -38,12 +38,18 @@ The following are the default configuration settings for the plugin:
 require("nvim-quicknotes").setup({
   -- Local directory where all the quicknotes will be stored
   quicknotes_dir = utils.path_join({ os.getenv("HOME"), ".local/state/nvim/quicknotes/" }),
+  -- Window configuration
   window = {
+    -- width and height represent the relative size of the floating window
     width = 0.5,
     height = 0.6,
     relative = "editor",
     style = "minimal",
+    -- Specify border style
     border = "rounded",
+    -- Title
+    title = "📝 Quicknotes",
+    title_color = "#FABD2F",
 })
 ```
 
