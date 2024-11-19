@@ -8,6 +8,8 @@ local DEFAULTS = {
 		relative = "editor",
 		style = "minimal",
 		border = "rounded",
+    title = "📝 Quicknotes",
+		title_color = "#FABD2F",
 	},
 }
 
