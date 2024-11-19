@@ -79,14 +79,6 @@ function M.open_float_win(filename, opts)
 	-- Create buffer
 	local newbuf = vim.api.nvim_create_buf(false, false)
 	vim.api.nvim_buf_set_name(newbuf, filename)
-	vim.bo[newbuf].readonly = false
-	vim.bo[newbuf].modifiable = true
-	vim.bo[newbuf].filetype = vim.filetype.match({ filename = filename, buf = newbuf }) or "markdown"
-	vim.bo[newbuf].bufhidden = "delete"
-	vim.bo[newbuf].buftype = ""
-	vim.bo[newbuf].swapfile = false
-	vim.bo[newbuf].buflisted = false
-	vim.diagnostic.enable(false, { bufnr = newbuf })
 
 	-- Ensure floating win is at least 10x80 always
 	window.width = math.max(math.floor(vim.o.columns * window.width), 80)
@@ -102,6 +94,14 @@ function M.open_float_win(filename, opts)
 	vim.api.nvim_set_current_win(win)
 
 	vim.cmd("edit " .. vim.fn.fnameescape(filename))
+  vim.bo[newbuf].buflisted = false
+	vim.bo[newbuf].readonly = false
+	vim.bo[newbuf].modifiable = true
+	vim.bo[newbuf].filetype = vim.filetype.match({ filename = filename, buf = newbuf }) or "markdown"
+	vim.bo[newbuf].bufhidden = "delete"
+	vim.bo[newbuf].buftype = ""
+	vim.bo[newbuf].swapfile = false
+	vim.diagnostic.enable(false, { bufnr = newbuf })
 
 	vim.keymap.set("n", "q", function()
 		vim.api.nvim_buf_call(newbuf, function()
