@@ -8,7 +8,7 @@ local DEFAULTS = {
 		relative = "editor",
 		style = "minimal",
 		border = "rounded",
-    title = "📝 Quicknotes",
+		title = "📝 Quicknotes",
 		title_color = "#FABD2F",
 	},
 }
@@ -41,7 +41,7 @@ function M.open_quicknotes()
 end
 
 -- Cleanup the directory - remove quicknotes whose associated project does not
--- exist anymore
+-- exist anymore (locally)
 function M.cleanup_quicknotes()
 	local p, err = io.popen("ls -1 " .. config.quicknotes_dir)
 	if p == nil then
